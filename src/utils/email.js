@@ -17,26 +17,34 @@
 //   });
 // };
 
+import dotenv from "dotenv";
+dotenv.config();
 
-console.log("🔥 USING RESEND EMAIL SYSTEM");
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
+});
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM,
+    const response = await transporter.sendMail({
+      from: process.env.BREVO_EMAIL,
       to,
       subject,
       html,
     });
 
-    console.log("🔥 RESEND RESPONSE:", response);
-
+    console.log("✅ Email sent:", response.messageId);
     return response;
   } catch (error) {
-    console.error("❌ RESEND EMAIL ERROR:", error);
+    console.error("❌ Email failed:", error);
     throw error;
   }
 };

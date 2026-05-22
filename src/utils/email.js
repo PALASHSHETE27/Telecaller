@@ -35,7 +35,7 @@ export const sendEmail = async ({ to, subject, html }) => {
       {
         sender: {
           name: "Telecaller OTP",
-          email: process.env.BREVO_EMAIL,
+          email: "noreply@telecallerproject.online",
         },
         to: [{ email: to }],
         subject,

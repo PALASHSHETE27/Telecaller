@@ -40,7 +40,7 @@ export const sendEmail = async ({ to, subject, html }) => {
       },
       {
         headers: {
-          "api-key": process.env.BREVO_SMTP_KEY,
+          "api-key": process.env.BREVO_API_KEY,
           "Content-Type": "application/json",
         },
         timeout: 10000, // prevents hanging

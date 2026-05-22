@@ -17,34 +17,40 @@
 //   });
 // };
 
+
+
+
+
+import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_EMAIL,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
-
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const response = await transporter.sendMail({
-      from: process.env.BREVO_EMAIL,
-      to,
-      subject,
-      html,
-    });
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "Telecaller App",
+          email: process.env.BREVO_EMAIL,
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_SMTP_KEY,
+          "Content-Type": "application/json",
+        },
+        timeout: 10000, // prevents hanging
+      }
+    );
 
-    console.log("✅ Email sent:", response.messageId);
-    return response;
-  } catch (error) {
-    console.error("❌ Email failed:", error);
-    throw error;
+    console.log("✅ Email sent via Brevo API");
+    return true;
+  } catch (err) {
+    console.error("❌ Email failed:", err.response?.data || err.message);
+    return false;
   }
 };

@@ -536,12 +536,11 @@
 
 
 
-import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/email.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
-/* ================= UTIL: EMPLOYEE ID ================= */
+/* ================= EMPLOYEE ID ================= */
 const generateEmployeeId = async () => {
   let employeeId;
   let exists = true;
@@ -563,11 +562,12 @@ export const register = async (req, res) => {
     if (!name || !email || !password)
       return res.status(400).json({ success: false, message: "All fields required" });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
+    const existing = await User.findOne({ email });
+    if (existing)
       return res.status(409).json({ success: false, message: "User already exists" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
     const employeeId = await generateEmployeeId();
 
     await User.create({
@@ -578,17 +578,17 @@ export const register = async (req, res) => {
 
       otp,
       otpType: "REGISTER",
-      otpExpiry: Date.now() + 15 * 60 * 1000,
+      otpExpiry: new Date(Date.now() + 10 * 60 * 1000),
 
       isVerified: false,
     });
 
-    // NON-BLOCKING EMAIL (FIX)
+    // non-blocking email
     sendEmail({
       to: email,
-      subject: "Verify your Telecaller account",
-      html: `<h3>Your OTP is: ${otp}</h3><p>Valid for 15 minutes</p>`,
-    }).catch(console.error);
+      subject: "Verify your account",
+      html: `<h3>Your OTP is: ${otp}</h3><p>Valid for 10 minutes</p>`,
+    });
 
     return res.status(201).json({
       success: true,
@@ -597,7 +597,7 @@ export const register = async (req, res) => {
 
   } catch (err) {
     console.error("REGISTER ERROR:", err);
-    res.status(500).json({ success: false, message: "Registration failed" });
+    return res.status(500).json({ success: false, message: "Registration failed" });
   }
 };
 
@@ -614,26 +614,26 @@ export const verifyOtp = async (req, res) => {
       user.otpType !== "REGISTER" ||
       !user.otp ||
       user.otp !== otp ||
-      user.otpExpiry < Date.now()
+      user.otpExpiry < new Date()
     ) {
       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
     }
 
     user.isVerified = true;
-    user.otp = undefined;
-    user.otpType = "";
-    user.otpExpiry = undefined;
+    user.otp = null;
+    user.otpType = null;
+    user.otpExpiry = null;
 
     await user.save();
 
     return res.json({
       success: true,
-      message: "Account verified successfully"
+      message: "Account verified successfully",
     });
 
   } catch (err) {
     console.error("VERIFY OTP ERROR:", err);
-    res.status(500).json({ success: false, message: "OTP verification failed" });
+    return res.status(500).json({ success: false, message: "OTP verification failed" });
   }
 };
 
@@ -647,10 +647,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     if (!user.isVerified)
-      return res.status(403).json({ success: false, message: "Please verify email first" });
+      return res.status(403).json({ success: false, message: "Verify email first" });
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch)
+    const match = await user.comparePassword(password);
+    if (!match)
       return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const accessToken = generateAccessToken(user._id);
@@ -664,19 +664,12 @@ export const login = async (req, res) => {
       message: "Login successful",
       accessToken,
       refreshToken,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        employeeId: user.employeeId,
-        avatar: user.avatar || null,
-        mobile: user.mobile || "",
-      },
+      user,
     });
 
   } catch (err) {
     console.error("LOGIN ERROR:", err);
-    res.status(500).json({ success: false, message: "Login failed" });
+    return res.status(500).json({ success: false, message: "Login failed" });
   }
 };
 
@@ -693,24 +686,24 @@ export const forgotPassword = async (req, res) => {
 
     user.otp = otp;
     user.otpType = "RESET";
-    user.otpExpiry = Date.now() + 15 * 60 * 1000;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     await user.save();
 
     sendEmail({
       to: email,
-      subject: "Reset your Telecaller password",
-      html: `<h3>Your password reset OTP is: ${otp}</h3><p>Valid for 15 minutes</p>`,
-    }).catch(console.error);
+      subject: "Reset Password OTP",
+      html: `<h3>Your OTP: ${otp}</h3><p>Valid for 10 minutes</p>`,
+    });
 
     return res.json({
       success: true,
-      message: "OTP sent to email"
+      message: "OTP sent to email",
     });
 
   } catch (err) {
     console.error("FORGOT PASSWORD ERROR:", err);
-    res.status(500).json({ success: false, message: "Forgot password failed" });
+    return res.status(500).json({ success: false, message: "Failed" });
   }
 };
 
@@ -727,26 +720,26 @@ export const resetPassword = async (req, res) => {
       user.otpType !== "RESET" ||
       !user.otp ||
       user.otp !== otp ||
-      user.otpExpiry < Date.now()
+      user.otpExpiry < new Date()
     ) {
       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
     }
 
     user.password = newPassword;
 
-    user.otp = undefined;
-    user.otpType = "";
-    user.otpExpiry = undefined;
+    user.otp = null;
+    user.otpType = null;
+    user.otpExpiry = null;
 
     await user.save();
 
     return res.json({
       success: true,
-      message: "Password reset successful"
+      message: "Password reset successful",
     });
 
   } catch (err) {
     console.error("RESET PASSWORD ERROR:", err);
-    res.status(500).json({ success: false, message: "Reset password failed" });
+    return res.status(500).json({ success: false, message: "Reset failed" });
   }
 };

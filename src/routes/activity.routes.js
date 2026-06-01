@@ -1,18 +1,3 @@
-// import express from "express";
-// import {
-//   createActivity,
-//   getLeadActivities,
-// } from "../controllers/activity.controller.js";
-// import { protect } from "../middleware/auth.middleware.js";
-
-// const router = express.Router();
-
-// router.use(protect);
-
-// router.post("/:leadId", createActivity);
-// router.get("/:leadId", getLeadActivities);
-
-// export default router;
 
 
 import express from "express";

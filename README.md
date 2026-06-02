@@ -37,22 +37,29 @@ The backend powers:
 
 ### Production API
 
+```bash
 https://telecaller-bn20.onrender.com
+```
 
 ### Health Check
 
+```bash
 GET https://telecaller-bn20.onrender.com/
+```
 
 Expected Response:
 
+```json
 {
   "status": "Telecaller API running 🚀"
 }
+```
 
 ---
 
 # Architecture
 
+```text
 Android App (Jetpack Compose)
             │
             ▼
@@ -63,6 +70,7 @@ Android App (Jetpack Compose)
    ▼        ▼        ▼         ▼
 MongoDB  Cloudinary Brevo    JWT
  Atlas    Storage   Email    Auth
+```
 
 ---
 
@@ -134,9 +142,8 @@ MongoDB  Cloudinary Brevo    JWT
 ## Settings
 
 - Notification Preferences
-- FCM Token Storage
-- Update Profile
 - Change Password
+- Update Profile
 
 ---
 
@@ -185,11 +192,15 @@ Transactional emails are sent through Brevo using a custom domain.
 
 ### Domain
 
+```text
 telecallerproject.online
+```
 
 ### Sender Email
 
+```text
 noreply@telecallerproject.online
+```
 
 ### Email Use Cases
 
@@ -208,6 +219,7 @@ noreply@telecallerproject.online
 
 # Project Structure
 
+```bash
 Telecaller-Backend/
 │
 ├── src/
@@ -261,6 +273,7 @@ Telecaller-Backend/
 ├── package.json
 ├── server.js
 └── README.md
+```
 
 ---
 
@@ -268,12 +281,13 @@ Telecaller-Backend/
 
 ## Clone Repository
 
-
+```bash
 git clone https://github.com/YOUR_USERNAME/telecaller-backend.git
+```
 
-
+```bash
 cd telecaller-backend
-
+```
 
 ---
 
